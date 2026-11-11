@@ -1,8 +1,2 @@
-/* Example configuration. Copy to config.js and edit currency symbols if needed. */
-window.INVOICEFLOW_CONFIG = {
-  version: '1.0.5',
-  currencySymbols: {
-    BDT: '৳', USD: '$', EUR: '€', GBP: '£', INR: '₹',
-    CAD: '$', AUD: '$', JPY: '¥'
-  }
-};
+/* Public, non-secret application configuration. */
+window.INVOICEFLOW_CONFIG = { version: '1.2.0', currencySymbols: { BDT: '৳', USD: '$', EUR: '€', GBP: '£', INR: '₹', CAD: '$', AUD: '$', JPY: '¥' } };

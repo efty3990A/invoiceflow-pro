@@ -1,14 +1,9 @@
-# AI coding guide
+# AI Developer Guide
 
-## Architecture
-- `index.html`, `login.html`, `workspace.html`: public landing, role demo login, invoice UI.
-- `assets/css/`: landing and workspace styles.
-- `assets/js/`: browser-local invoice modules; preserve the Local Storage schema unless migration is explicitly requested.
-- `backend/app.py`: Flask routes, session authentication, role checks, owner-scoped SQLite invoice API.
-- `database/schema.sql`: schema; `database/seed.py`: evaluation users.
-
-## Conventions
-Use parameterized SQL, password hashes, session checks on mutations, and owner_id predicates on invoice reads/updates/deletes. Never commit `.env`, database files, credentials or generated artifacts. Do not claim the browser editor syncs with the API; they are currently separate stores.
-
-## Run and test
-Follow `HowToSetup.md`. Run `python -m unittest discover -s tests`; run the browser calculation checks with `node tests/calc.test.js` and `node tests/calculations.test.js`.
+- Frontend: `index.html`, `workspace.html`, `login.html`, `assets/css/`, `assets/js/`.
+- Backend: `backend/app.py` (Flask routes, sessions, CSRF, role and owner checks).
+- Database: `database/schema.sql`, `database/seed.py`; SQLite path configured by `DATABASE_PATH`.
+- Tests: `python -m unittest discover -s tests -v`; JavaScript tests use Node's built-in test runner where available.
+- Install: `pip install -r requirements.lock`; configure environment from `.env.example`.
+- Never hard-code credentials or weaken authentication. All SQL must remain parameterized. Every mutating API route must use `authenticated(mutation=True)` and enforce ownership/role constraints.
+- Keep frontend browser Local Storage and API SQLite persistence clearly distinguished unless implementing and testing a deliberate synchronization layer.

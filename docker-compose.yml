@@ -2,12 +2,15 @@ services:
   invoiceflow:
     build: .
     ports:
-      - "5000:5000"
+      - "${PORT:-5000}:5000"
     environment:
-      SECRET_KEY: ${SECRET_KEY:-change-this-before-deployment}
-      DATABASE_PATH: /app/database/invoiceflow.sqlite3
+      SECRET_KEY: ${SECRET_KEY:?Set a unique SECRET_KEY in your private .env file}
+      DATABASE_PATH: /app/data/invoiceflow.sqlite3
       COOKIE_SECURE: ${COOKIE_SECURE:-0}
+      DEMO_ADMIN_PASSWORD: ${DEMO_ADMIN_PASSWORD:?Set a strong demo admin password}
+      DEMO_USER_PASSWORD: ${DEMO_USER_PASSWORD:?Set a strong demo user password}
+      ENABLE_DEMO_LOGIN: ${ENABLE_DEMO_LOGIN:-1}
     volumes:
-      - invoiceflow_data:/app/database
+      - invoiceflow_data:/app/data
 volumes:
   invoiceflow_data:

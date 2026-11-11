@@ -1,51 +1,42 @@
-# InvoiceFlow Pro 1.1.0 — Installation and Demo
+# InvoiceFlow Pro 1.2.0 — Clean Installation
 
-## Architecture and important product boundary
-The package includes the original browser-based invoice editor (HTML/CSS/vanilla JS; invoice history and drafts use browser Local Storage) plus a Flask/SQLite authentication and invoice API. The editor's existing Local Storage workflow is retained for backward compatibility; it is not silently represented as cloud-synchronised data. API invoice records are stored in SQLite and scoped to the signed-in account.
+## Stack
+HTML5, CSS3, Vanilla JavaScript; Flask 3.1.2 API; SQLite; Gunicorn; Docker. The original invoice editor retains browser Local Storage for its existing draft/history workflow. The authenticated API stores its own invoice records in SQLite; the two stores are intentionally documented as separate until an explicit migration/sync feature is implemented.
 
-## Requirements
-Python 3.11+ and pip. Docker is optional. No Node.js build is required for the product UI.
+## Required configuration
+Copy `.env.example` to a private `.env`. Set a unique `SECRET_KEY` (at least 32 random characters), two different demo passwords (at least 16 characters each), and `DATABASE_PATH`. Never commit `.env` or production credentials. The source archive contains placeholders only.
 
-## VPS / local Python installation
-1. Extract the ZIP and enter the `invoiceflow-pro` folder.
-2. Create a virtual environment: `python -m venv .venv`.
-3. Activate it (Windows: `.venv\\Scripts\\activate`; Linux/macOS: `source .venv/bin/activate`).
-4. Install pinned packages: `pip install -r requirements.txt`.
-5. Copy `.env.example` to `.env` and set a unique `SECRET_KEY`. Load the variables into your process environment; do not commit `.env`.
-6. Create schema and demo accounts: `python database/seed.py`.
-7. Start: `python backend/app.py` and open `http://localhost:5000`.
-8. For public VPS use, put a production WSGI server and HTTPS reverse proxy in front of Flask; set `COOKIE_SECURE=1`, use a strong secret, and restrict filesystem permissions.
+## VPS / Python installation
+1. Install Python 3.12 and a virtual environment.
+2. `python -m venv .venv` then activate it.
+3. `pip install -r requirements.lock`.
+4. Export variables from your private `.env` (or load them with your process manager).
+5. Run `python database/seed.py` to create schema and demo accounts.
+6. Run `gunicorn --bind 0.0.0.0:${PORT:-5000} --workers 2 --threads 4 backend.app:app`.
+7. Put HTTPS reverse proxy in front; set `COOKIE_SECURE=1`.
 
-## Docker installation
+## Docker
 1. Install Docker Engine and Docker Compose.
-2. Set a strong `SECRET_KEY` in the shell or a private `.env` file.
+2. Copy `.env.example` to `.env`, replace all placeholders with unique values.
 3. Run `docker compose up --build -d`.
-4. Open `http://localhost:5000`. SQLite data persists in the `invoiceflow_data` volume.
-5. Stop with `docker compose down` (volume remains); `docker compose down -v` deletes the database volume.
+4. Visit `http://localhost:5000`; health check is `/healthz`.
+5. Stop with `docker compose down`; named volume `invoiceflow_data` persists SQLite data.
 
-## Demo accounts
-- Admin: `admin-demo` / `AdminDemo!2026`
-- User: `user-demo` / `UserDemo!2026`
+## Demo access
+The login page provides one-click Admin and User demo sessions through `/api/demo-login/<role>`. This is intentionally enabled for marketplace review and can be disabled by setting `ENABLE_DEMO_LOGIN=0`. The demo accounts are seeded with deployment-specific passwords from `DEMO_ADMIN_PASSWORD` and `DEMO_USER_PASSWORD`; no default passwords are embedded in source. The public demo-login feature should be used only with non-production sample data.
 
-These are evaluation-only credentials created by `database/seed.py`. Change/remove them before production. Passwords are stored as Werkzeug password hashes, not plaintext.
+## Security controls
+- `SECRET_KEY` is mandatory; startup fails if missing or shorter than 32 characters.
+- Passwords are stored as scrypt hashes.
+- Session cookies are HttpOnly and SameSite=Lax; set Secure on HTTPS.
+- Mutating API endpoints require authentication and a session CSRF token in `X-CSRF-Token`.
+- Admin routes enforce the admin role; invoice queries and mutations are scoped to the current owner. The workspace page is not served to anonymous sessions.
+- SQL uses parameterized statements; foreign keys and indexes are created from `database/schema.sql`.
+- `/healthz` is available for hosting health checks.
+- Vibe96 framing is permitted by CSP; no X-Frame-Options header is emitted.
 
-## Database
-`database/schema.sql` creates `users` and `invoices`, foreign keys, role constraints and owner index. `database/seed.py` creates demo accounts. Back up `database/invoiceflow.sqlite3` or the Docker volume before upgrades.
-
-## API
-- `POST /api/login` — validates credentials and starts an HTTP session.
-- `POST /api/logout` — authenticated session logout.
-- `GET /api/me` — current session identity.
-- `GET /api/invoices` — authenticated, owner-scoped list.
-- `POST /api/invoices` — authenticated create.
-- `PUT /api/invoices/<id>` — authenticated owner-scoped update.
-- `DELETE /api/invoices/<id>` — authenticated owner-scoped delete.
-- `GET /api/admin/users` — admin-only user listing.
-
-All invoice mutation endpoints require a session and scope records to the current owner. Admin user listing is role-gated. For production, add CSRF protection, rate limiting, HTTPS, password rotation and a managed secret store before exposing the API publicly.
+## API summary
+`POST /api/login`, `POST /api/demo-login/admin|user`, `POST /api/logout`, `GET /api/me`, `GET|POST /api/invoices`, `PUT|DELETE /api/invoices/<id>`, `GET /api/admin/users`, `GET /healthz`.
 
 ## Branding
-Edit the product name, metadata and marketing copy in `index.html`; styles are in `assets/css/landing.css` and `assets/css/style.css`. Replace screenshots under `screenshots/` while retaining their referenced filenames.
-
-## Existing browser-local invoice editor
-The original invoice editor continues to store its own records in Local Storage for compatibility. Export JSON backups regularly. Clearing browser storage or changing browser profile/origin can remove access to those local records. API invoices are a separate SQLite-backed data set; the current editor does not automatically sync its Local Storage records to the API.
+Edit landing page copy in `index.html`, styles in `assets/css/`, and screenshots in `screenshots/`.

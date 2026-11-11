@@ -1,0 +1,13 @@
+services:
+  invoiceflow:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      SECRET_KEY: ${SECRET_KEY:-change-this-before-deployment}
+      DATABASE_PATH: /app/database/invoiceflow.sqlite3
+      COOKIE_SECURE: ${COOKIE_SECURE:-0}
+    volumes:
+      - invoiceflow_data:/app/database
+volumes:
+  invoiceflow_data:

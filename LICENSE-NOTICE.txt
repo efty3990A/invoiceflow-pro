@@ -1,0 +1,5 @@
+LICENSE NOTICE
+
+Buyer-facing draft license terms are provided in LICENSE-NOTE.md. The seller must review and adapt those terms to the target marketplace's license model and applicable law before sale.
+
+This application includes no third-party JavaScript libraries, remote fonts, external images, API clients or runtime packages. It uses system font stacks and native browser APIs only. Do not claim legal review or marketplace approval unless independently obtained.

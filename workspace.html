@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="InvoiceFlow Pro is a responsive offline invoice maker with invoice history, templates, logo branding, tax, discounts and PDF export.">
+<meta name="theme-color" content="#f5f7fb">
+<title>InvoiceFlow Pro — Invoice Maker</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<script>fetch("/api/me").then(r=>{if(!r.ok)location.replace("login.html")}).catch(()=>location.replace("login.html"));</script></head>
+<body>
+<header class="topbar">
+  <a class="brand" href="index.html" aria-label="InvoiceFlow Pro"><span class="brand-mark">IF</span><span>Invoice<span>Flow</span><small> PRO</small></span></a>
+  <div class="top-actions"><a class="btn btn-light" href="index.html" style="text-decoration:none">Product page</a>
+    <span class="local-status"><i></i> Demo workspace · browser-local data</span>
+    <button class="btn btn-light" id="historyBtn" type="button">Invoice history</button>
+    <button class="btn btn-light" id="newBtn" type="button">＋ New</button>
+    <button class="btn btn-light" id="sampleBtn" type="button">Load sample</button>
+    <button class="btn btn-primary" id="pdfBtn" type="button">Export PDF ↗</button>
+  </div>
+</header>
+
+<main class="shell">
+  <section class="editor card">
+    <div class="heading-row">
+      <div><span class="eyebrow">INVOICE WORKSPACE</span><h1>Create an invoice</h1><p class="muted">Build, preview and save professional invoices.</p></div>
+      <button class="round-help" id="helpBtn" type="button" aria-label="Help">?</button>
+    </div>
+
+    <section class="form-section">
+      <div class="section-head"><span class="step">01</span><div><h2>Your business</h2><p>Business identity and contact information</p></div></div>
+      <div class="grid two">
+        <label class="field"><span>Business name <b>*</b></span><input id="businessName" maxlength="90" value="Your Business Name" placeholder="Business name"></label>
+        <label class="field"><span>Email / phone</span><input id="businessContact" maxlength="120" placeholder="hello@example.com · +880..."></label>
+      </div>
+      <label class="field"><span>Business address</span><textarea id="businessAddress" rows="2" maxlength="300" placeholder="Street, city, country"></textarea></label>
+      <div class="grid two align-end">
+        <label class="field"><span>Business logo (optional)</span><input id="logoFile" type="file" accept="image/png,image/jpeg,image/webp"></label>
+        <button class="btn btn-text" id="removeLogoBtn" type="button">Remove logo</button>
+      </div>
+      <p class="micro-hint">Logo is stored locally in this browser and included in saved invoice records.</p>
+    </section>
+
+    <section class="form-section">
+      <div class="section-head"><span class="step">02</span><div><h2>Invoice details</h2><p>Reference number, dates and display settings</p></div></div>
+      <div class="grid two">
+        <label class="field"><span>Invoice number <b>*</b></span><input id="invoiceNumber" maxlength="45" value="INV-0001"></label>
+        <label class="field"><span>Currency</span><select id="currency"><option value="BDT">BDT — ৳</option><option value="USD">USD — $</option><option value="EUR">EUR — €</option><option value="GBP">GBP — £</option><option value="INR">INR — ₹</option><option value="CAD">CAD — $</option><option value="AUD">AUD — $</option><option value="JPY">JPY — ¥</option></select></label>
+        <label class="field"><span>Issue date</span><input id="issueDate" type="date"></label>
+        <label class="field"><span>Due date</span><input id="dueDate" type="date"></label>
+      </div>
+      <div class="grid two">
+        <label class="field"><span>Invoice style</span><select id="template"><option value="classic">Classic Blue</option><option value="minimal">Minimal Mono</option><option value="emerald">Emerald Accent</option></select></label>
+        <label class="field"><span>Payment status label</span><select id="paymentStatus"><option value="Unpaid">Unpaid</option><option value="Paid">Paid</option><option value="Partially paid">Partially paid</option></select></label>
+      </div>
+    </section>
+
+    <section class="form-section">
+      <div class="section-head"><span class="step">03</span><div><h2>Bill to</h2><p>Customer or company information</p></div></div>
+      <div class="grid two">
+        <label class="field"><span>Client / company name <b>*</b></span><input id="clientName" maxlength="100" placeholder="Client name"></label>
+        <label class="field"><span>Email / phone</span><input id="clientContact" maxlength="120" placeholder="client@example.com"></label>
+      </div>
+      <label class="field"><span>Client address</span><textarea id="clientAddress" rows="2" maxlength="300" placeholder="Client billing address"></textarea></label>
+    </section>
+
+    <section class="form-section">
+      <div class="section-head"><span class="step">04</span><div><h2>Items & services</h2><p>Add products or services and set quantities and rates</p></div></div>
+      <div class="items-wrap">
+        <div class="items-head"><span>Description</span><span>Qty</span><span>Rate</span><span>Amount</span><span></span></div>
+        <div id="itemsList"></div>
+      </div>
+      <button class="btn btn-outline add-line" id="addItemBtn" type="button">＋ Add line item</button>
+    </section>
+
+    <section class="form-section">
+      <div class="section-head"><span class="step">05</span><div><h2>Tax, discount & notes</h2><p>Adjust the invoice total and add instructions</p></div></div>
+      <div class="grid two">
+        <label class="field"><span>Tax rate (%)</span><input id="taxRate" type="number" min="0" max="100" step="0.01" value="0"></label>
+        <label class="field"><span>Discount (fixed amount)</span><input id="discount" type="number" min="0" step="0.01" value="0"></label>
+      </div>
+      <label class="field"><span>Notes / payment instructions</span><textarea id="notes" rows="3" maxlength="600" placeholder="Payment details, terms or a thank-you note"></textarea></label>
+    </section>
+
+    <div class="editor-actions">
+      <button class="btn btn-primary" id="saveInvoiceBtn" type="button">Save invoice</button>
+      <button class="btn btn-light" id="saveDraftBtn" type="button">Save draft</button>
+      <button class="btn btn-light" id="backupBtn" type="button">Export backup</button>
+      <label class="btn btn-light import-label">Import backup<input id="importFile" type="file" accept="application/json,.json"></label>
+    </div>
+    <p class="status" id="status" role="status" aria-live="polite"></p>
+    <p class="privacy-note">Demo workspace: data is stored locally in this browser profile. This single-user edition has no account system or role-based authentication. Export JSON backups regularly.</p>
+  </section>
+
+  <aside class="preview-side">
+    <div class="preview-top"><div><span class="eyebrow">LIVE PREVIEW</span><strong>Invoice document</strong></div><span class="a4-tag">A4 · PRINT READY</span></div>
+    <article class="paper theme-classic" id="paper">
+      <div class="paper-header">
+        <div class="seller-block"><img id="previewLogo" class="preview-logo" alt="Business logo"><div class="invoice-title">INVOICE</div><strong id="pBusiness">Your Business Name</strong><p id="pBusinessAddress"></p><p id="pBusinessContact"></p></div>
+        <div class="invoice-meta"><span>INVOICE NO.</span><strong id="pInvoiceNo">INV-0001</strong><span>ISSUE DATE</span><b id="pIssueDate">—</b><span>DUE DATE</span><b id="pDueDate">—</b><em id="pStatus">UNPAID</em></div>
+      </div>
+      <div class="bill-block"><div><span class="overline">BILL TO</span><strong id="pClient">Client name</strong><p id="pClientAddress"></p><p id="pClientContact"></p></div><div class="payment-box"><span class="dot"></span> PAYMENT STATUS<br><b id="pPaymentStatus">Unpaid</b></div></div>
+      <table class="preview-table"><thead><tr><th>DESCRIPTION</th><th>QTY</th><th>RATE</th><th>AMOUNT</th></tr></thead><tbody id="pItems"></tbody></table>
+      <div class="paper-lower"><div class="note-block"><strong>Notes</strong><p id="pNotes">Thank you for your business.</p></div><div class="totals"><div><span>Subtotal</span><b id="pSubtotal"></b></div><div><span>Tax</span><b id="pTax"></b></div><div><span>Discount</span><b id="pDiscount"></b></div><div class="total-due"><span>Total due</span><strong id="pTotal"></strong></div></div></div>
+      <footer class="paper-footer"><span>Thank you for your business</span><span id="pFooterNo">INV-0001</span></footer>
+    </article>
+    <p class="print-hint">Choose <b>Save as PDF</b> in the browser print dialog.</p>
+  </aside>
+</main>
+
+<dialog id="historyDialog" class="modal wide-modal">
+  <div class="modal-head"><div><span class="eyebrow">YOUR WORKSPACE</span><h2>Saved invoices</h2></div><button class="close-modal" data-close="historyDialog" aria-label="Close">×</button></div>
+  <div id="historyList" class="history-list"></div>
+  <div class="modal-foot"><button class="btn btn-light" id="clearHistoryBtn" type="button">Clear all history</button><span class="muted tiny">Stored only on this device/browser.</span></div>
+</dialog>
+<dialog id="helpDialog" class="modal">
+  <button class="close-modal" data-close="helpDialog" aria-label="Close">×</button>
+  <span class="eyebrow">QUICK GUIDE</span><h2>How to use InvoiceFlow Pro</h2>
+  <ol><li>Enter your business and customer details.</li><li>Add products or services and set quantities and rates.</li><li>Choose currency, style, payment status, tax and discount.</li><li>Save the invoice to local history or export a PDF.</li><li>Export a JSON backup to move your saved invoices to another browser.</li></ol>
+  <p class="muted tiny">InvoiceFlow Pro runs locally. It does not upload or transmit your invoice data.</p>
+  <button class="btn btn-primary" data-close="helpDialog">Got it</button>
+</dialog>
+<script src="config.example.js"></script>
+<script src="config.js"></script>
+<script src="assets/js/calculations.js"></script>
+<script src="assets/js/validation.js"></script>
+<script src="assets/js/storage.js"></script>
+<script src="assets/js/sample-data.js"></script>
+<script src="assets/js/render.js"></script>
+<script src="assets/js/backup.js"></script>
+<script src="assets/js/app.js"></script>
+<script src="assets/js/ui.js"></script>
+<script>window.InvoiceFlowApp.start(); window.InvoiceFlowUI.bind(window.InvoiceFlowApp);</script>
+<script src="https://vibe96.com/js/v96-demo.js" defer></script>
+</body>
+</html>

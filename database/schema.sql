@@ -1,0 +1,13 @@
+PRAGMA foreign_keys=ON;
+CREATE TABLE IF NOT EXISTS users (
+ id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT NOT NULL UNIQUE,
+ password_hash TEXT NOT NULL, role TEXT NOT NULL CHECK(role IN ('admin','user')),
+ active INTEGER NOT NULL DEFAULT 1 CHECK(active IN (0,1)), created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+CREATE TABLE IF NOT EXISTS invoices (
+ id INTEGER PRIMARY KEY AUTOINCREMENT, owner_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+ invoice_number TEXT NOT NULL, client_name TEXT NOT NULL, total REAL NOT NULL CHECK(total>=0),
+ currency TEXT NOT NULL, status TEXT NOT NULL DEFAULT 'Unpaid', payload TEXT NOT NULL DEFAULT '{}',
+ created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP, UNIQUE(owner_id,invoice_number)
+);
+CREATE INDEX IF NOT EXISTS idx_invoices_owner ON invoices(owner_id);
